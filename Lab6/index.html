@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Калькулятор стоимости услуги</title>
+<style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .calculator {
+    background: #fff;
+    padding: 25px 35px;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    width: 400px;
+    text-align: center;
+  }
+
+  h2 {
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    margin-top: 10px;
+    margin-bottom: 6px;
+    text-align: left;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    transition: all 0.3s;
+    box-sizing: border-box;
+  }
+
+  input:focus, select:focus {
+    border-color: #5c7cfa;
+    outline: none;
+    box-shadow: 0 0 5px rgba(92,124,250,0.4);
+  }
+
+  .radio-group {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+  }
+
+  .option-block {
+    margin-top: 10px;
+  }
+
+  #result {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #222;
+    font-weight: 600;
+  }
+
+  .error {
+    color: #d93025;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+  <h2>Калькулятор заказа</h2>
+
+  <form id="calcForm">
+    <label for="product">Выберите товар:</label>
+    <select id="product">
+      <option value="28000">Ноутбук — 28 000 ₽</option>
+      <option value="12000">Смартфон — 12 000 ₽</option>
+      <option value="2500">Наушники — 2 500 ₽</option>
+      <option value="7000">Колонка — 7 000 ₽</option>
+      <option value="17000">Планшет — 17 000 ₽</option>
+    </select>
+
+    <label for="quantity">Количество:</label>
+    <input type="text" id="quantity" placeholder="Введите количество">
+
+    <label>Тип услуги:</label>
+    <div class="radio-group">
+      <label><input type="radio" name="service" value="type1" checked> Тип 1</label>
+      <label><input type="radio" name="service" value="type2"> Тип 2</label>
+      <label><input type="radio" name="service" value="type3"> Тип 3</label>
+    </div>
+
+    <div id="optionsBlock" class="option-block" style="display:none;">
+      <label for="optionSelect">Опции:</label>
+      <select id="optionSelect">
+        <option value="1.1">Базовая (+10%)</option>
+        <option value="1.25">Расширенная (+25%)</option>
+        <option value="1.5">Премиум (+50%)</option>
+      </select>
+    </div>
+
+    <div id="propertyBlock" class="option-block" style="display:none;">
+      <label><input type="checkbox" id="extraProperty"> Дополнительное свойство (+20%)</label>
+    </div>
+  </form>
+
+  <div id="result">Стоимость: —</div>
+</div>
+
+<script>
+  const quantityInput = document.getElementById('quantity');
+  const productSelect = document.getElementById('product');
+  const serviceRadios = document.getElementsByName('service');
+  const optionsBlock = document.getElementById('optionsBlock');
+  const optionSelect = document.getElementById('optionSelect');
+  const propertyBlock = document.getElementById('propertyBlock');
+  const extraProperty = document.getElementById('extraProperty');
+  const result = document.getElementById('result');
+
+  // Пересчёт стоимости
+  function calculate() {
+    const quantityStr = quantityInput.value.trim();
+    if (!/^\d+$/.test(quantityStr) || Number(quantityStr) <= 0) {
+      result.innerHTML = "<span class='error'>Введите корректное количество!</span>";
+      return;
+    }
+
+    const quantity = parseInt(quantityStr);
+    const basePrice = parseFloat(productSelect.value);
+    const serviceType = [...serviceRadios].find(r => r.checked).value;
+
+    let finalPrice = basePrice;
+
+    if (serviceType === 'type2') {
+      finalPrice *= parseFloat(optionSelect.value);
+    }
+
+    if (serviceType === 'type3' && extraProperty.checked) {
+      finalPrice *= 1.2;
+    }
+    const total = finalPrice * quantity;
+    result.innerHTML =`Стоимость заказа: <span style="color:#5c7cfa">${total.toFixed(2)} ₽</span>`;
+  }
+
+  // Отображение нужных блоков
+  function updateVisibility() {
+    const serviceType = [...serviceRadios].find(r => r.checked).value;
+
+    if (serviceType === 'type1') {
+      optionsBlock.style.display = 'none';
+      propertyBlock.style.display = 'none';
+    } else if (serviceType === 'type2') {
+      optionsBlock.style.display = 'block';
+      propertyBlock.style.display = 'none';
+    } else if (serviceType === 'type3') {
+      optionsBlock.style.display = 'none';
+      propertyBlock.style.display = 'block';
+    }
+
+    calculate();
+  }
+
+  // Обработчики
+  quantityInput.addEventListener('input', calculate);
+  productSelect.addEventListener('change', calculate);
+  optionSelect.addEventListener('change', calculate);
+  extraProperty.addEventListener('change', calculate);
+  serviceRadios.forEach(radio => radio.addEventListener('change', updateVisibility));
+
+  // Инициализация
+  updateVisibility();
+</script>
+
+</body>
+</html>
